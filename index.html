@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Crystal Cluster</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="Tend a glowing crystal cluster. Tap to chip shards, grow it while you are away, then shatter it into prisms and start again stronger.">
+  <meta name="theme-color" content="#0b0820">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Crystal Cluster">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <section id="stage" aria-label="Crystal cluster. Tap to collect shards.">
+      <canvas id="scene"></canvas>
+      <header id="hud">
+        <div class="hud-count"><span id="shards">0</span></div>
+        <div class="hud-label">shards</div>
+        <div class="hud-rate"><span id="rate">0</span> per second</div>
+        <div id="buffs" aria-live="polite"></div>
+      </header>
+      <div id="resonance" hidden>Resonance <b id="resonance-mult">×1.0</b><span class="meter"><i id="resonance-fill"></i></span></div>
+      <div id="hint">Tap the cluster</div>
+    </section>
+
+    <section id="panel">
+      <div id="views">
+        <div class="view" id="view-grow" role="tabpanel">
+          <div class="view-head">
+            <h2>Growths</h2>
+            <div class="segmented" id="buy-mode" role="group" aria-label="Buy amount">
+              <button type="button" data-mode="1">×1</button>
+              <button type="button" data-mode="10">×10</button>
+              <button type="button" data-mode="max">Max</button>
+            </div>
+          </div>
+          <div class="list" id="gen-list"></div>
+        </div>
+
+        <div class="view" id="view-carve" role="tabpanel" hidden>
+          <div class="view-head">
+            <h2>Carvings</h2>
+            <span class="muted" id="carve-count"></span>
+          </div>
+          <div class="list" id="upgrade-list"></div>
+        </div>
+
+        <div class="view" id="view-shatter" role="tabpanel" hidden>
+          <div class="view-head">
+            <h2>Shatter</h2>
+            <span class="prism-chip"><i class="prism-icon"></i><b id="prisms">0</b> prisms</span>
+          </div>
+          <div class="list">
+            <div class="card shatter-card">
+              <p>Shatter the cluster into <b>Prisms</b>. You start over with no shards, growths or carvings, but every Prism you earn makes everything stronger, forever.</p>
+              <p class="muted" id="prism-bonus"></p>
+              <button type="button" class="big-btn" id="shatter-btn"></button>
+              <p class="muted small" id="prism-next"></p>
+            </div>
+            <h3>Facets</h3>
+            <p class="muted small">Permanent perks. Spending Prisms never reduces your bonus.</p>
+            <div id="facet-list"></div>
+          </div>
+        </div>
+
+        <div class="view" id="view-more" role="tabpanel" hidden>
+          <div class="view-head"><h2>More</h2></div>
+          <div class="list">
+            <div class="card">
+              <label class="toggle">
+                <span>Sound</span>
+                <input type="checkbox" id="sound-toggle">
+                <i></i>
+              </label>
+            </div>
+            <h3>Your cluster</h3>
+            <div class="card stats" id="stats"></div>
+            <h3>Save</h3>
+            <div class="card">
+              <p class="muted small">Progress saves on this device automatically.</p>
+              <div class="btn-row">
+                <button type="button" class="btn" id="export-btn">Export</button>
+                <button type="button" class="btn" id="import-btn">Import</button>
+                <button type="button" class="btn danger" id="reset-btn">Reset</button>
+              </div>
+            </div>
+            <div class="card" id="install-card" hidden>
+              <b>Play it like an app</b>
+              <p class="muted small">In Safari, tap Share and then “Add to Home Screen” for full screen play that works offline.</p>
+            </div>
+            <p class="muted small center">Crystal Cluster v0.1</p>
+          </div>
+        </div>
+      </div>
+
+      <nav id="tabs" role="tablist">
+        <button type="button" role="tab" data-view="grow" class="active">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l4 7-4 13-4-13z"/><path d="M5 9l3 4 2 9-6-8z" opacity=".6"/><path d="M19 9l-3 4-2 9 6-8z" opacity=".6"/></svg>
+          <span>Grow</span>
+        </button>
+        <button type="button" role="tab" data-view="carve">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3l7 7-3 3-7-7zM10 7l7 7-9 7H3v-5z" /></svg>
+          <span>Carve</span><i class="dot" id="dot-carve" hidden></i>
+        </button>
+        <button type="button" role="tab" data-view="shatter">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l9 7-9 13L3 9z"/><path d="M3 9h18M12 2l-3 7 3 13 3-13z" fill="none" stroke="rgba(11,8,32,.55)" stroke-width="1.2"/></svg>
+          <span>Shatter</span><i class="dot" id="dot-shatter" hidden></i>
+        </button>
+        <button type="button" role="tab" data-view="more">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2.2"/><circle cx="12" cy="12" r="2.2"/><circle cx="19" cy="12" r="2.2"/></svg>
+          <span>More</span>
+        </button>
+      </nav>
+    </section>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="modal-root" hidden></div>
+  <noscript><p style="color:#fff;padding:2rem;text-align:center">Crystal Cluster needs JavaScript to run.</p></noscript>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
