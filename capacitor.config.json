@@ -1,0 +1,16 @@
+{
+  "appId": "com.joogiebear.crystalcluster",
+  "appName": "Crystal Cluster",
+  "webDir": "www",
+  "backgroundColor": "#07051a",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#07051a",
+    "allowsLinkPreview": false
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "iconColor": "#7df3ff"
+    }
+  }
+}

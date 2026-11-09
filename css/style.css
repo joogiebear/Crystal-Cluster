@@ -13,6 +13,10 @@
   --gold: #ffd98a;
   --good: #8dffc8;
   --danger: #ff8a9c;
+  --glow-a: rgba(84, 54, 190, 0.5);
+  --glow-b: rgba(40, 22, 110, 0.25);
+  --glow-c: rgba(60, 200, 220, 0.12);
+  --glow-d: rgba(255, 110, 220, 0.1);
   --sat: env(safe-area-inset-top, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
   --sal: env(safe-area-inset-left, 0px);
@@ -51,10 +55,28 @@ h2, h3, p { margin: 0; }
   display: flex;
   flex-direction: column;
   background:
-    radial-gradient(120% 70% at 50% 34%, rgba(84, 54, 190, 0.5) 0%, rgba(40, 22, 110, 0.25) 45%, transparent 75%),
-    radial-gradient(60% 40% at 15% 8%, rgba(60, 200, 220, 0.12), transparent 70%),
-    radial-gradient(60% 40% at 90% 20%, rgba(255, 110, 220, 0.1), transparent 70%),
+    radial-gradient(120% 70% at 50% 34%, var(--glow-a) 0%, var(--glow-b) 45%, transparent 75%),
+    radial-gradient(60% 40% at 15% 8%, var(--glow-c), transparent 70%),
+    radial-gradient(60% 40% at 90% 20%, var(--glow-d), transparent 70%),
     linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 100%);
+}
+
+/* Cavern backdrops (cosmetic). The default needs no class. */
+body.bg-deep {
+  --bg-0: #02040f; --bg-1: #06102e; --panel: rgba(7, 12, 36, 0.94);
+  --glow-a: rgba(30, 70, 190, 0.45); --glow-b: rgba(12, 30, 100, 0.25); --glow-c: rgba(60, 120, 255, 0.14); --glow-d: rgba(120, 90, 255, 0.1);
+}
+body.bg-glacier {
+  --bg-0: #061624; --bg-1: #0f3350; --panel: rgba(9, 26, 44, 0.94);
+  --glow-a: rgba(90, 190, 235, 0.42); --glow-b: rgba(40, 110, 170, 0.25); --glow-c: rgba(220, 245, 255, 0.16); --glow-d: rgba(150, 200, 255, 0.12);
+}
+body.bg-ember {
+  --bg-0: #120505; --bg-1: #33100c; --panel: rgba(34, 11, 12, 0.94);
+  --glow-a: rgba(215, 80, 30, 0.42); --glow-b: rgba(120, 30, 20, 0.28); --glow-c: rgba(255, 170, 60, 0.14); --glow-d: rgba(255, 80, 80, 0.1);
+}
+body.bg-northern {
+  --bg-0: #03100f; --bg-1: #082a2c; --panel: rgba(6, 24, 28, 0.94);
+  --glow-a: rgba(40, 200, 150, 0.4); --glow-b: rgba(60, 60, 170, 0.28); --glow-c: rgba(120, 255, 180, 0.16); --glow-d: rgba(170, 110, 255, 0.16);
 }
 
 /* ---------- Stage ---------- */
@@ -326,11 +348,106 @@ h2, h3, p { margin: 0; }
 .stats span:nth-child(odd) { color: var(--muted); }
 .stats span:nth-child(even) { font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
 
+/* Shared bits */
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.card-head > b { font-size: 16px; }
+.card-head .buff { text-shadow: none; }
+.meter.wide { display: block; height: 8px; margin-top: 10px; border-radius: 99px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+.meter.wide i { display: block; height: 100%; width: 0; border-radius: 99px; background: linear-gradient(90deg, var(--gold), var(--pink)); transition: width 0.25s; }
+.tag {
+  display: inline-block; margin: 8px 0 2px; padding: 4px 12px; border-radius: 999px;
+  background: rgba(255, 217, 138, 0.14); border: 1px solid rgba(255, 217, 138, 0.45);
+  color: var(--gold); font-size: 13px; font-weight: 700;
+}
+.list h3 span { color: var(--cyan); letter-spacing: 0.04em; margin-left: 6px; }
+.list > .btn, .card > .btn { display: block; width: 100%; flex: 0 0 auto; margin-top: 10px; }
+.list > .btn-row .btn { min-height: 44px; }
+
+/* The Deep */
+#deep, #veins { display: flex; flex-direction: column; gap: 8px; }
+#vein-list { display: flex; flex-direction: column; gap: 8px; }
+.heart-icon {
+  width: 15px; height: 15px; display: inline-block;
+  clip-path: polygon(50% 0, 100% 38%, 78% 100%, 22% 100%, 0 38%);
+  background: linear-gradient(160deg, #ffd0d8, #ff5d7a 55%, #8a1f4a);
+}
+.deep-card { border-color: rgba(255, 110, 140, 0.35); }
+.deep-btn { background: linear-gradient(120deg, #ffb39a, #ff5d7a 55%, #8f6bff); box-shadow: 0 6px 24px rgba(255, 93, 122, 0.3); }
+
+/* Daily Geode */
+.geode-card { border-color: rgba(255, 217, 138, 0.35); }
+.geode-card p { font-size: 14px; line-height: 1.45; }
+.geode-card #geode-goal { margin-top: 6px; font-weight: 700; }
+.geode-card .big-btn:not(.ready) { background: var(--card-hi); color: var(--text); box-shadow: none; opacity: 1; font-variant-numeric: tabular-nums; }
+.geode-card .big-btn.ready { animation: ready 1.2s ease-in-out infinite; }
+@keyframes ready { 50% { transform: scale(1.02); box-shadow: 0 6px 34px rgba(255, 217, 138, 0.55); } }
+
+/* Collection book */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.spec {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 10px 6px 8px; border-radius: 14px;
+  background: var(--card); border: 1px solid var(--line);
+  text-align: center; min-height: 104px;
+}
+.spec:active { transform: scale(0.97); }
+.spec-name { font-size: 12.5px; font-weight: 700; line-height: 1.2; }
+.spec-rarity { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.spec.uncommon .spec-rarity { color: var(--good); }
+.spec.rare .spec-rarity { color: var(--cyan); }
+.spec.mythic .spec-rarity { color: var(--gold); }
+.spec.mythic:not(.unknown) { border-color: rgba(255, 217, 138, 0.5); }
+.spec.unknown { opacity: 0.6; }
+.spec.unknown .gem::before, .spec.unknown .gem::after { background: #4b4470; }
+.gem.big { display: block; margin: 6px auto 0; transform: scale(1.5); transform-origin: 50% 0; margin-bottom: 26px; }
+
+/* Achievements */
+#achievement-list { display: flex; flex-direction: column; gap: 8px; }
+.row.ach { min-height: 52px; opacity: 0.62; }
+.row.ach:active { transform: none; }
+.row.ach.done { opacity: 1; border-color: rgba(141, 255, 200, 0.4); }
+.row.ach.done .price { color: var(--good); opacity: 1; font-size: 18px; }
+
+/* Settings, looks and shop */
+.settings, .looks { display: flex; flex-direction: column; gap: 14px; }
+.toggle span { display: flex; flex-direction: column; gap: 2px; padding-right: 12px; }
+.toggle small { font-weight: 500; font-size: 12.5px; color: var(--muted); line-height: 1.3; }
+.toggle i { flex: 0 0 auto; }
+.look-row { display: flex; flex-direction: column; gap: 7px; }
+.look-row > span { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px; padding: 0 13px 0 10px; border-radius: 999px;
+  background: var(--card-hi); border: 1px solid var(--line);
+  font-size: 14px; font-weight: 700;
+}
+.chip .swatch { width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.45); }
+.chip:not(:has(.swatch)) { padding-left: 13px; }
+.chip.active { background: rgba(125, 243, 255, 0.2); border-color: rgba(125, 243, 255, 0.6); color: var(--cyan); }
+.chip.locked { opacity: 0.6; }
+.chip.locked span::after { content: " 🔒"; font-size: 11px; }
+#shop { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+#pack-list { display: flex; flex-direction: column; gap: 8px; }
+.tips { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.tip {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-height: 58px; border-radius: 14px;
+  background: rgba(255, 139, 234, 0.12); border: 1px solid rgba(255, 139, 234, 0.4);
+  font-size: 13.5px; font-weight: 700;
+}
+.tip b { color: var(--pink); font-size: 16px; }
+.tip:active { background: rgba(255, 139, 234, 0.24); }
+.tip:disabled, .row:disabled { opacity: 0.5; }
+.row.owned { opacity: 0.75; }
+.row.owned .price { color: var(--good); opacity: 1; }
+#shop-web { margin-top: 8px; }
+
 /* Tab bar */
 #tabs {
   flex: 0 0 auto;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   padding: 4px calc(var(--sar) + 8px) calc(var(--sab) + 4px) calc(var(--sal) + 8px);
   border-top: 1px solid var(--line);
   background: rgba(10, 6, 30, 0.5);
@@ -344,6 +461,7 @@ h2, h3, p { margin: 0; }
   border-radius: 12px;
 }
 #tabs svg { width: 24px; height: 24px; fill: currentColor; }
+#tabs button span { white-space: nowrap; }
 #tabs button.active { color: var(--cyan); }
 #tabs .dot {
   position: absolute; top: 7px; left: calc(50% + 9px);
@@ -439,5 +557,5 @@ h2, h3, p { margin: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #hint, .modal, #modal-root, .gen.bought { animation: none; }
+  #hint, .modal, #modal-root, .gen.bought, .geode-card .big-btn.ready { animation: none; }
 }
