@@ -2,6 +2,7 @@
 // The cluster is drawn procedurally and grows as the player buys growths.
 
 import { GENERATORS } from './data.js';
+import { SKINS, TAP_FX } from './cosmetics.js';
 
 const TAU = Math.PI * 2;
 const DEG = Math.PI / 180;
@@ -22,8 +23,15 @@ function mulberry32(seed) {
   };
 }
 
-/** Build the list of crystals (in cluster units, where 1 = cluster radius) for the current growths. */
-export function composeCluster(gens) {
+/** A warm rose-gold crystal near the heart of the cluster: a thank-you to players who support the game. */
+const SUPPORTER_CRYSTAL = { angle: 11 * DEG, len: 0.44, width: 0.09, ox: 0.05, hue: 338, sat: 96, lig: 70, fixed: true };
+
+/**
+ * Build the list of crystals (in cluster units, where 1 = cluster radius) for the current growths.
+ * @param {object} gens growth id -> amount owned
+ * @param {{skin?: string, supporter?: boolean}} [look] cosmetic choices; they never change the shape
+ */
+export function composeCluster(gens, look = {}) {
   const crystals = [
     { angle: -4 * DEG, len: 0.5, width: 0.105, ox: 0, ...CORE },
     { angle: -34 * DEG, len: 0.33, width: 0.08, ox: -0.08, ...CORE },
@@ -53,6 +61,9 @@ export function composeCluster(gens) {
       });
     }
   });
+  const skin = SKINS.find((s) => s.id === look.skin);
+  if (skin && skin.id !== 'classic') crystals.forEach((c, i) => Object.assign(c, skin.tint(c, i)));
+  if (look.supporter) crystals.push({ ...SUPPORTER_CRYSTAL });
   // Long crystals sit at the back, short ones in front.
   crystals.sort((a, b) => b.len - a.len);
   return crystals;
@@ -182,6 +193,9 @@ export class Scene {
     this.fitted = false;
     this.crystals = composeCluster({});
     this.signature = '';
+    this.gens = {};
+    this.look = { skin: 'classic', supporter: false };
+    this.tapStyle = TAP_FX[0];
     this.sprite = document.createElement('canvas');
     this.spriteDirty = true;
     this.particles = [];
@@ -244,10 +258,21 @@ export class Scene {
     if (sig === this.signature) return;
     const grew = sig > this.signature && this.signature !== '';
     this.signature = sig;
-    this.crystals = composeCluster(gens);
+    this.gens = { ...gens };
+    this.crystals = composeCluster(gens, this.look);
     if (this.W) this.layout();
     this.spriteDirty = true;
     if (grew) this.flash = 1;
+  }
+
+  /** Apply cosmetic choices: crystal skin, tap effect and the supporter crystal. */
+  setLook({ skin = 'classic', tapFx = 'shards', supporter = false } = {}) {
+    this.tapStyle = TAP_FX.find((f) => f.id === tapFx) || TAP_FX[0];
+    if (skin === this.look.skin && supporter === this.look.supporter) return;
+    this.look = { skin, supporter };
+    this.crystals = composeCluster(this.gens, this.look);
+    if (this.W) this.layout();
+    this.spriteDirty = true;
   }
 
   renderSprite() {
@@ -297,12 +322,13 @@ export class Scene {
 
   tapFx(x, y, text, big = false) {
     this.punch = 1;
+    const fx = this.tapStyle;
     const n = this.reduced ? 2 : big ? 9 : 5;
     for (let i = 0; i < n; i++) {
       if (this.particles.length > 140) break;
       const src = this.crystals[Math.floor(Math.random() * this.crystals.length)];
       const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.4;
-      const sp = 90 + Math.random() * 200;
+      const sp = (90 + Math.random() * 200) * fx.speed;
       this.particles.push({
         x, y,
         vx: Math.cos(a) * sp,
@@ -311,9 +337,10 @@ export class Scene {
         vr: (Math.random() - 0.5) * 12,
         size: 3 + Math.random() * 5,
         life: 0,
-        max: 0.5 + Math.random() * 0.4,
-        hue: src.hue,
-        lig: src.lig,
+        max: (0.5 + Math.random() * 0.4) * (fx.life || 1),
+        hue: fx.hue == null ? src.hue : fx.hue + (Math.random() - 0.5) * (fx.hueSpread || 0),
+        lig: fx.lig == null ? src.lig : fx.lig - 14,
+        fx,
       });
     }
     if (text) {
@@ -454,22 +481,43 @@ export class Scene {
       const p = this.particles[i];
       p.life += dt;
       if (p.life >= p.max) { this.particles.splice(i, 1); continue; }
-      p.vy += 520 * dt;
+      const shape = p.fx ? p.fx.shape : 'shard';
+      p.vy += (p.fx ? p.fx.gravity : 520) * dt;
+      if (shape === 'dot') p.vx += Math.sin(t * 3 + p.rot) * 90 * dt; // drift like something light
       p.x += p.vx * dt;
       p.y += p.vy * dt;
       p.rot += p.vr * dt;
       const k = 1 - p.life / p.max;
       ctx.save();
       ctx.translate(p.x, p.y);
-      ctx.rotate(p.rot);
       ctx.globalAlpha = Math.min(1, k * 1.6);
-      ctx.fillStyle = `hsl(${p.hue}, 90%, ${Math.min(92, p.lig + 14)}%)`;
+      ctx.fillStyle = `hsl(${p.hue}, 90%, ${Math.min(94, p.lig + 14)}%)`;
       ctx.beginPath();
-      ctx.moveTo(0, -p.size);
-      ctx.lineTo(p.size * 0.5, 0);
-      ctx.lineTo(0, p.size);
-      ctx.lineTo(-p.size * 0.5, 0);
-      ctx.closePath();
+      if (shape === 'dot') {
+        if (p.fx.glow) {
+          ctx.globalAlpha *= 0.3;
+          ctx.arc(0, 0, p.size * 1.3, 0, TAU);
+          ctx.fill();
+          ctx.globalAlpha = Math.min(1, k * 1.6);
+          ctx.beginPath();
+        }
+        ctx.arc(0, 0, p.size * 0.5, 0, TAU);
+      } else if (shape === 'star') {
+        ctx.rotate(p.rot);
+        for (let j = 0; j < 4; j++) {
+          const a = (j * Math.PI) / 2;
+          ctx.lineTo(Math.cos(a) * p.size * 1.2, Math.sin(a) * p.size * 1.2);
+          ctx.lineTo(Math.cos(a + Math.PI / 4) * p.size * 0.35, Math.sin(a + Math.PI / 4) * p.size * 0.35);
+        }
+        ctx.closePath();
+      } else {
+        ctx.rotate(p.rot);
+        ctx.moveTo(0, -p.size);
+        ctx.lineTo(p.size * 0.5, 0);
+        ctx.lineTo(0, p.size);
+        ctx.lineTo(-p.size * 0.5, 0);
+        ctx.closePath();
+      }
       ctx.fill();
       ctx.restore();
     }

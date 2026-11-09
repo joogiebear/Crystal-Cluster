@@ -67,35 +67,117 @@
             <h3>Facets</h3>
             <p class="muted small">Permanent perks. Spending Prisms never reduces your bonus.</p>
             <div id="facet-list"></div>
+            <div id="deep" hidden>
+              <h3>The Deep</h3>
+              <div class="card shatter-card deep-card">
+                <div class="card-head">
+                  <b>Descend</b>
+                  <span class="prism-chip"><i class="heart-icon"></i><b id="hearts">0</b> heartstones</span>
+                </div>
+                <p>Leave this cavern for a deeper one and carry out <b>Heartstones</b>. You give up your shards, growths, carvings, Prisms and Facets. Heartstones, Veins, your collection and your achievements stay.</p>
+                <p class="muted" id="heart-bonus"></p>
+                <button type="button" class="big-btn deep-btn" id="descend-btn"></button>
+                <p class="muted small" id="heart-next"></p>
+              </div>
+              <div id="veins" hidden>
+                <h3>Veins</h3>
+                <p class="muted small">Perks that survive every Descent. Spending Heartstones never reduces your bonus.</p>
+                <div id="vein-list"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="view" id="view-trove" role="tabpanel" hidden>
+          <div class="view-head">
+            <h2>Trove</h2>
+            <span class="muted" id="trove-bonus"></span>
+          </div>
+          <div class="list">
+            <div class="card geode-card" id="geode-card">
+              <div class="card-head">
+                <b>Daily Geode</b>
+                <span class="buff" id="geode-mod"></span>
+              </div>
+              <p class="muted small" id="geode-mod-desc"></p>
+              <p id="geode-goal"></p>
+              <span class="meter wide"><i id="geode-fill"></i></span>
+              <button type="button" class="big-btn" id="geode-btn"></button>
+              <p class="muted small" id="geode-streak"></p>
+            </div>
+            <h3>Collection <span id="collection-count"></span></h3>
+            <p class="muted small">Rare crystals turn up now and then as you tap and catch Glimmers. Each different one gives +2% to everything, forever.</p>
+            <div class="grid" id="collection-grid"></div>
+            <h3>Achievements <span id="achievement-count"></span></h3>
+            <p class="muted small">Each one gives +1% to everything, forever.</p>
+            <div class="btn-row" id="gc-row" hidden>
+              <button type="button" class="btn" id="gc-achievements-btn">Game Center</button>
+              <button type="button" class="btn" id="gc-leaderboards-btn">Leaderboards</button>
+            </div>
+            <div id="achievement-list"></div>
           </div>
         </div>
 
         <div class="view" id="view-more" role="tabpanel" hidden>
           <div class="view-head"><h2>More</h2></div>
           <div class="list">
-            <div class="card">
+            <div class="card settings">
               <label class="toggle">
                 <span>Sound</span>
                 <input type="checkbox" id="sound-toggle">
                 <i></i>
               </label>
+              <label class="toggle" id="haptics-row" hidden>
+                <span>Haptics</span>
+                <input type="checkbox" id="haptics-toggle">
+                <i></i>
+              </label>
+              <label class="toggle" id="notify-row" hidden>
+                <span>Tell me when the cluster is full<small>One notification, when away growth has reached its limit</small></span>
+                <input type="checkbox" id="notify-toggle">
+                <i></i>
+              </label>
+            </div>
+            <h3>Look and sound</h3>
+            <div class="card looks">
+              <div class="look-row"><span>Crystals</span><div class="chips" id="look-skin"></div></div>
+              <div class="look-row"><span>Backdrop</span><div class="chips" id="look-backdrop"></div></div>
+              <div class="look-row"><span>Tap effect</span><div class="chips" id="look-tapFx"></div></div>
+              <div class="look-row"><span>Soundscape</span><div class="chips" id="look-music"></div></div>
+              <div class="look-row" id="look-icon-row" hidden><span>App icon</span><div class="chips" id="look-icon"></div></div>
+              <label class="toggle" id="supporter-row" hidden>
+                <span>Supporter crystal<small>A rose-gold crystal in your cluster. Thank you!</small></span>
+                <input type="checkbox" id="supporter-toggle">
+                <i></i>
+              </label>
+            </div>
+            <h3>Support the game</h3>
+            <div class="card" id="shop-card">
+              <p class="small">Crystal Cluster has no ads, and nothing here makes the game faster. Tips and packs only change how it looks and sounds, and they keep it growing.</p>
+              <div id="shop" hidden>
+                <div class="tips" id="tip-list"></div>
+                <div id="pack-list"></div>
+                <button type="button" class="btn" id="restore-btn">Restore Purchases</button>
+              </div>
+              <p class="muted small" id="shop-web" hidden>The tip jar and cosmetic packs are part of the iOS app. Everything else is free here.</p>
             </div>
             <h3>Your cluster</h3>
             <div class="card stats" id="stats"></div>
             <h3>Save</h3>
             <div class="card">
-              <p class="muted small">Progress saves on this device automatically.</p>
+              <p class="muted small" id="save-note">Progress saves on this device automatically.</p>
               <div class="btn-row">
                 <button type="button" class="btn" id="export-btn">Export</button>
                 <button type="button" class="btn" id="import-btn">Import</button>
                 <button type="button" class="btn danger" id="reset-btn">Reset</button>
               </div>
+              <button type="button" class="btn" id="cloud-btn" hidden>Check iCloud for a save</button>
             </div>
             <div class="card" id="install-card" hidden>
               <b>Play it like an app</b>
               <p class="muted small">In Safari, tap Share and then “Add to Home Screen” for full screen play that works offline.</p>
             </div>
-            <p class="muted small center">Crystal Cluster v0.1</p>
+            <p class="muted small center">Crystal Cluster v1.0</p>
           </div>
         </div>
       </div>
@@ -112,6 +194,10 @@
         <button type="button" role="tab" data-view="shatter">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l9 7-9 13L3 9z"/><path d="M3 9h18M12 2l-3 7 3 13 3-13z" fill="none" stroke="rgba(11,8,32,.55)" stroke-width="1.2"/></svg>
           <span>Shatter</span><i class="dot" id="dot-shatter" hidden></i>
+        </button>
+        <button type="button" role="tab" data-view="trove">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9l3-5h10l3 5-8 11z"/><path d="M4 9h16M9 9l3 11 3-11M7 4l2 5 3-5 3 5 2-5" fill="none" stroke="rgba(11,8,32,.55)" stroke-width="1.2"/></svg>
+          <span>Trove</span><i class="dot" id="dot-trove" hidden></i>
         </button>
         <button type="button" role="tab" data-view="more">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2.2"/><circle cx="12" cy="12" r="2.2"/><circle cx="19" cy="12" r="2.2"/></svg>
