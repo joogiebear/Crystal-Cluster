@@ -138,6 +138,9 @@ export class UI {
         this.refresh(true);
       });
     }
+    for (const btn of document.querySelectorAll('#fps-mode button')) {
+      btn.addEventListener('click', () => this.actions.setFps(btn.dataset.fps === 'auto' ? 'auto' : Number(btn.dataset.fps)));
+    }
     $('upgrade-list').addEventListener('click', (e) => {
       const row = e.target.closest('[data-upgrade]');
       if (row) this.actions.buyUpgrade(row.dataset.upgrade);
@@ -187,6 +190,11 @@ export class UI {
     const { settings } = this.game.state;
     for (const btn of document.querySelectorAll('#buy-mode button')) {
       btn.classList.toggle('active', String(settings.buyMode) === btn.dataset.mode);
+    }
+    for (const btn of document.querySelectorAll('#fps-mode button')) {
+      const on = String(settings.fps) === btn.dataset.fps;
+      btn.classList.toggle('active', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
     }
     $('sound-toggle').checked = settings.sound;
     $('haptics-toggle').checked = settings.haptics;

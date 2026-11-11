@@ -318,6 +318,11 @@ export class Scene {
     this.spriteDirty = false;
   }
 
+  /** True while something fast is on screen (particles, tap numbers, a glimmer, a zoom or flash). */
+  get busy() {
+    return this.particles.length > 0 || this.texts.length > 0 || !!this.glimmer || this.zoom !== 1 || this.flash > 0;
+  }
+
   /** Screen position of a crystal tip, for sparkles. */
   tipOf(crystal, scale = 1) {
     return {

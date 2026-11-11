@@ -455,3 +455,13 @@ test('every daily goal reads as a real number', () => {
     assert.match(text, /12\.3K/);
   }
 });
+
+test('the frame rate setting survives a save and rejects junk', () => {
+  const s = G.newState(0);
+  assert.equal(s.settings.fps, 'auto');
+  s.settings.fps = 30;
+  assert.equal(G.deserialize(G.serialize(s)).settings.fps, 30);
+  s.settings.fps = 60;
+  assert.equal(G.deserialize(G.serialize(s)).settings.fps, 60);
+  assert.equal(G.deserialize('{"settings":{"fps":240}}').settings.fps, 'auto');
+});

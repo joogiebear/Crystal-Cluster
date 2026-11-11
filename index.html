@@ -133,6 +133,14 @@
                 <input type="checkbox" id="haptics-toggle">
                 <i></i>
               </label>
+              <div class="toggle" id="fps-row">
+                <span>Frame rate<small>Auto is smooth while you play and eases off when the cluster is resting. 30 saves the most battery.</small></span>
+                <div class="segmented" id="fps-mode" role="group" aria-label="Frame rate">
+                  <button type="button" data-fps="auto">Auto</button>
+                  <button type="button" data-fps="60">60</button>
+                  <button type="button" data-fps="30">30</button>
+                </div>
+              </div>
               <label class="toggle" id="notify-row" hidden>
                 <span>Tell me when the cluster is full<small>One notification, when away growth has reached its limit</small></span>
                 <input type="checkbox" id="notify-toggle">

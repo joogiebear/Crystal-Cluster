@@ -80,6 +80,7 @@ export function newState(now = Date.now()) {
     createdAt: now,
     settings: {
       sound: true,
+      fps: 'auto', // 'auto', 60 or 30
       buyMode: 1,
       haptics: true,
       notify: false,
@@ -610,6 +611,8 @@ export function deserialize(json, now = Date.now()) {
   s.settings.sound = raw.settings?.sound !== false;
   const mode = raw.settings?.buyMode;
   s.settings.buyMode = mode === 10 || mode === 'max' ? mode : 1;
+  const fps = raw.settings?.fps;
+  s.settings.fps = fps === 30 || fps === 60 ? fps : 'auto';
   s.settings.haptics = raw.settings?.haptics !== false;
   s.settings.notify = raw.settings?.notify === true;
   s.settings.supporterCrystal = raw.settings?.supporterCrystal !== false;
