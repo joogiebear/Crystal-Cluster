@@ -37,7 +37,8 @@ function gemIcon(hue, sat, extraClass) {
   return gem;
 }
 
-const pct = (mult) => `+${fmt(Math.round((mult - 1) * 100))}%`;
+/** A bonus as a percentage, or as a multiplier once the percentage would need a suffix. */
+const pct = (mult) => (mult >= 11 ? `×${fmt(mult, true)}` : `+${Math.round((mult - 1) * 100)}%`);
 
 function secondsToMidnight(now = new Date()) {
   const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
@@ -137,6 +138,9 @@ export class UI {
         this.refresh(true);
       });
     }
+    for (const btn of document.querySelectorAll('#fps-mode button')) {
+      btn.addEventListener('click', () => this.actions.setFps(btn.dataset.fps === 'auto' ? 'auto' : Number(btn.dataset.fps)));
+    }
     $('upgrade-list').addEventListener('click', (e) => {
       const row = e.target.closest('[data-upgrade]');
       if (row) this.actions.buyUpgrade(row.dataset.upgrade);
@@ -186,6 +190,11 @@ export class UI {
     const { settings } = this.game.state;
     for (const btn of document.querySelectorAll('#buy-mode button')) {
       btn.classList.toggle('active', String(settings.buyMode) === btn.dataset.mode);
+    }
+    for (const btn of document.querySelectorAll('#fps-mode button')) {
+      const on = String(settings.fps) === btn.dataset.fps;
+      btn.classList.toggle('active', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
     }
     $('sound-toggle').checked = settings.sound;
     $('haptics-toggle').checked = settings.haptics;
@@ -338,11 +347,10 @@ export class UI {
 
   refreshShatter(state, gain) {
     setText($('prisms'), fmt(state.prisms));
-    const pct = Math.round((G.prismMultiplier(state) - 1) * 100);
     setText(
       $('prism-bonus'),
       state.prismsEarned > 0
-        ? `${fmt(state.prismsEarned)} Prisms earned so far: +${fmt(pct)}% to everything.`
+        ? `${fmt(state.prismsEarned)} Prisms earned so far: ${pct(G.prismMultiplier(state))} to everything.`
         : 'Each Prism gives +5% to everything.'
     );
     const btn = $('shatter-btn');
@@ -439,7 +447,7 @@ export class UI {
       const ready = G.dailyReady(state);
       setText($('geode-mod'), mod.name);
       setText($('geode-mod-desc'), `${mod.desc}.`);
-      setText($('geode-goal'), `${goal.text(fmt(daily.target), fmt)} to crack today's Geode.`);
+      setText($('geode-goal'), `${goal.text(daily.target, fmt)} to crack today's Geode.`);
       $('geode-fill').style.width = `${Math.floor((daily.progress / daily.target) * 100)}%`;
       const btn = $('geode-btn');
       btn.disabled = !ready;

@@ -186,6 +186,12 @@ const ui = new UI(game, {
     submitScores();
     cloudPush();
   },
+  setFps(fps) {
+    game.state.settings.fps = fps;
+    haptics.impact('LIGHT');
+    ui.syncSettings();
+    save();
+  },
   setHaptics(on) {
     game.state.settings.haptics = on;
     haptics.enabled = on;
@@ -587,6 +593,7 @@ function stagePoint(e) {
 
 function doTap(x, y) {
   if (scene.hitGlimmer(x, y)) {
+    lastActive = performance.now();
     const reward = G.catchGlimmer(game.state);
     sound.glimmer();
     haptics.notify('SUCCESS');
@@ -596,6 +603,7 @@ function doTap(x, y) {
     ui.refresh();
     return;
   }
+  lastActive = performance.now();
   const gain = G.tap(game.state);
   sound.tap(game.state.resonance);
   haptics.tap(game.state.buffs.edge > 0);
@@ -637,10 +645,25 @@ function resize() {
   const inset = hudEl.getBoundingClientRect().bottom - stageTop + 6;
   scene.resize(Math.max(70, inset));
 }
-new ResizeObserver(resize).observe(stage);
+const layoutWatcher = new ResizeObserver(resize);
+layoutWatcher.observe(stage);
+layoutWatcher.observe(hudEl); // buff chips make the HUD taller
 window.addEventListener('orientationchange', () => setTimeout(resize, 250));
 
 // ---------- Main loop ----------
+
+const IDLE_AFTER_MS = 4000;
+let lastActive = performance.now(); // the last tap on the stage
+
+/**
+ * Frames per second to draw at. Auto is 60 while the cluster is being tapped
+ * or something is flying about, and 30 once it is resting.
+ */
+function targetFps(now) {
+  const { fps } = game.state.settings;
+  if (fps !== 'auto') return fps;
+  return now - lastActive < IDLE_AFTER_MS || scene.busy ? 60 : 30;
+}
 
 let last = performance.now();
 let uiClock = 0;
@@ -649,6 +672,9 @@ let slowClock = 0;
 let cloudClock = 0;
 
 function frame(now) {
+  requestAnimationFrame(frame);
+  // Skip display refreshes that come sooner than the chosen frame rate (2ms of slack for timer jitter).
+  if (now - last < 1000 / targetFps(now) - 2) return;
   const dt = Math.min(1, Math.max(0, (now - last) / 1000));
   last = now;
   const state = game.state;
@@ -683,7 +709,6 @@ function frame(now) {
     saveClock = 0;
     save();
   }
-  requestAnimationFrame(frame);
 }
 
 document.addEventListener('visibilitychange', () => {
