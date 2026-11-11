@@ -423,3 +423,35 @@ test('skins recolour the cluster without changing its shape', () => {
   }
   assert.equal(composeCluster(gens, { supporter: true }).length, plain.length + 1);
 });
+
+test('a short absence runs buffs and resonance down instead of wiping them', () => {
+  const s = G.newState(0);
+  s.buffs.radiance = 30;
+  s.buffs.edge = 5;
+  s.resonance = 1;
+  G.applyOffline(s, 4000);
+  assert.equal(s.buffs.radiance, 26);
+  assert.equal(s.buffs.edge, 1);
+  assert.ok(s.resonance > 0 && s.resonance < 1);
+  G.applyOffline(s, 3600 * 1000);
+  assert.deepEqual(s.buffs, { radiance: 0, edge: 0 });
+  assert.equal(s.resonance, 0);
+});
+
+test('Seed Stock shards discover growths and carvings straight after a shatter', () => {
+  const s = G.newState(0);
+  s.totalShards = 1e8;
+  s.prisms = 100;
+  for (let i = 0; i < 4; i++) G.buyFacet(s, 'seed');
+  G.shatter(s);
+  assert.equal(s.shards, 1e6);
+  assert.equal(G.generatorUnlocked(s, 4), true, 'Prism Loom (180K) is on offer');
+  assert.ok(G.visibleUpgrades(s).some((u) => u.id === 'all1'));
+});
+
+test('every daily goal reads as a real number', () => {
+  for (const goal of DAILY_GOALS) {
+    const text = goal.text(12345, fmt);
+    assert.match(text, /12\.3K/);
+  }
+});

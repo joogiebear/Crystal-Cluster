@@ -637,7 +637,9 @@ function resize() {
   const inset = hudEl.getBoundingClientRect().bottom - stageTop + 6;
   scene.resize(Math.max(70, inset));
 }
-new ResizeObserver(resize).observe(stage);
+const layoutWatcher = new ResizeObserver(resize);
+layoutWatcher.observe(stage);
+layoutWatcher.observe(hudEl); // buff chips make the HUD taller
 window.addEventListener('orientationchange', () => setTimeout(resize, 250));
 
 // ---------- Main loop ----------

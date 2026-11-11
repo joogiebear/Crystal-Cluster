@@ -261,6 +261,11 @@ export function buyUpgrade(state, id) {
 
 // ---------- Time ----------
 
+/** How much resonance fades per second. */
+function resonanceDecay(state) {
+  return RESONANCE_DECAY * (1 - 0.15 * facetLevel(state, 'sustain')) * (dailyMod(state)?.decay || 1);
+}
+
 /** Advance the simulation by `dt` seconds of active play. */
 export function tick(state, dt) {
   if (!(dt > 0)) return;
@@ -271,8 +276,7 @@ export function tick(state, dt) {
   addShards(state, gain);
 
   state.playSeconds += dt;
-  const decay = RESONANCE_DECAY * (1 - 0.15 * facetLevel(state, 'sustain')) * (dailyMod(state)?.decay || 1);
-  state.resonance = Math.max(0, state.resonance - decay * dt);
+  state.resonance = Math.max(0, state.resonance - resonanceDecay(state) * dt);
   state.buffs.radiance = Math.max(0, state.buffs.radiance - dt);
   state.buffs.edge = Math.max(0, state.buffs.edge - dt);
   state.glimmerIn -= dt;
@@ -290,9 +294,10 @@ export function applyOffline(state, now = Date.now()) {
   const elapsed = (now - state.lastSeen) / 1000;
   state.lastSeen = now;
   if (!(elapsed > 0)) return null;
-  state.resonance = 0;
-  state.buffs.radiance = 0;
-  state.buffs.edge = 0;
+  // Resonance and buffs run down over the time away, so a glance at another app does not wipe them.
+  state.resonance = Math.max(0, state.resonance - resonanceDecay(state) * elapsed);
+  state.buffs.radiance = Math.max(0, state.buffs.radiance - elapsed);
+  state.buffs.edge = Math.max(0, state.buffs.edge - elapsed);
   const { capSeconds, efficiency } = offlineLimits(state);
   const counted = Math.min(elapsed, capSeconds);
   const d = derive(state);
@@ -350,7 +355,8 @@ export function shatter(state) {
   if (!state.firstShatterSeconds) state.firstShatterSeconds = Math.max(1, state.playSeconds);
   state.shatters++;
   state.shards = SEED_AMOUNTS[facetLevel(state, 'seed')] || 0;
-  state.runShards = 0;
+  // Seed Stock counts as progress in the new cluster, so what it can pay for is discovered straight away.
+  state.runShards = state.shards;
   state.gens = {};
   state.upgrades = {};
   state.resonance = 0;

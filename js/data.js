@@ -167,9 +167,9 @@ export const DAILY_MOD_BY_ID = Object.fromEntries(DAILY_MODS.map((m) => [m.id, m
 
 /** What cracks the Geode. `amounts` are picked from by the day's seed; `hours` scales to the player's own rate. */
 export const DAILY_GOALS = [
-  { id: 'taps', amounts: [300, 500, 800], text: (n) => `Tap the cluster ${n} times` },
-  { id: 'glimmers', amounts: [3, 4, 6], text: (n) => `Catch ${n} Glimmers` },
-  { id: 'growths', amounts: [40, 80, 120], text: (n) => `Plant ${n} growths` },
+  { id: 'taps', amounts: [300, 500, 800], text: (n, fmt) => `Tap the cluster ${fmt(n)} times` },
+  { id: 'glimmers', amounts: [3, 4, 6], text: (n, fmt) => `Catch ${fmt(n)} Glimmers` },
+  { id: 'growths', amounts: [40, 80, 120], text: (n, fmt) => `Plant ${fmt(n)} growths` },
   { id: 'shards', hours: 1, text: (n, fmt) => `Earn ${fmt(n)} shards` },
 ];
 

@@ -37,7 +37,8 @@ function gemIcon(hue, sat, extraClass) {
   return gem;
 }
 
-const pct = (mult) => `+${fmt(Math.round((mult - 1) * 100))}%`;
+/** A bonus as a percentage, or as a multiplier once the percentage would need a suffix. */
+const pct = (mult) => (mult >= 11 ? `×${fmt(mult, true)}` : `+${Math.round((mult - 1) * 100)}%`);
 
 function secondsToMidnight(now = new Date()) {
   const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
@@ -338,11 +339,10 @@ export class UI {
 
   refreshShatter(state, gain) {
     setText($('prisms'), fmt(state.prisms));
-    const pct = Math.round((G.prismMultiplier(state) - 1) * 100);
     setText(
       $('prism-bonus'),
       state.prismsEarned > 0
-        ? `${fmt(state.prismsEarned)} Prisms earned so far: +${fmt(pct)}% to everything.`
+        ? `${fmt(state.prismsEarned)} Prisms earned so far: ${pct(G.prismMultiplier(state))} to everything.`
         : 'Each Prism gives +5% to everything.'
     );
     const btn = $('shatter-btn');
@@ -439,7 +439,7 @@ export class UI {
       const ready = G.dailyReady(state);
       setText($('geode-mod'), mod.name);
       setText($('geode-mod-desc'), `${mod.desc}.`);
-      setText($('geode-goal'), `${goal.text(fmt(daily.target), fmt)} to crack today's Geode.`);
+      setText($('geode-goal'), `${goal.text(daily.target, fmt)} to crack today's Geode.`);
       $('geode-fill').style.width = `${Math.floor((daily.progress / daily.target) * 100)}%`;
       const btn = $('geode-btn');
       btn.disabled = !ready;

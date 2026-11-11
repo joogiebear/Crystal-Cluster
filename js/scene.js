@@ -213,9 +213,15 @@ export class Scene {
 
   resize(hudInset) {
     const rect = this.canvas.getBoundingClientRect();
-    if (hudInset != null) this.hudInset = hudInset;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    if (rect.width === this.W && rect.height === this.H && dpr === this.dpr && hudInset == null) return;
+    const sameSize = rect.width === this.W && rect.height === this.H && dpr === this.dpr;
+    if (sameSize && (hudInset == null || Math.abs(hudInset - this.hudInset) < 1)) return;
+    if (hudInset != null) this.hudInset = hudInset;
+    if (sameSize) {
+      // Only the HUD changed height (buff chips came or went): ease to the new fit instead of snapping.
+      this.layout();
+      return;
+    }
     this.W = rect.width;
     this.H = rect.height;
     this.dpr = dpr;
@@ -344,8 +350,12 @@ export class Scene {
       });
     }
     if (text) {
-      if (this.texts.length > 22) this.texts.shift();
-      this.texts.push({ x: x + (Math.random() - 0.5) * 26, y: y - 14, text, life: 0, max: 0.9, big });
+      if (this.texts.length > 14) this.texts.shift();
+      // Fan successive numbers out to alternate sides so fast taps do not pile into one blob.
+      this.textSide = -(this.textSide || 1);
+      const reach = Math.min(90, this.W * 0.2);
+      const dx = this.textSide * (0.25 + Math.random() * 0.75) * reach;
+      this.texts.push({ x: x + dx, y: y - 14 - Math.random() * 18, text, life: 0, max: 0.75, big });
     }
   }
 

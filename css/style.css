@@ -473,10 +473,12 @@ body.bg-northern {
 /* ---------- Toast and modal ---------- */
 
 #toast {
-  position: fixed;
-  left: 50%; top: calc(var(--sat) + 14px);
-  transform: translate(-50%, -150%);
-  max-width: min(92vw, 420px);
+  /* Sits at the foot of the stage, clear of the shard count and of the lists. */
+  position: absolute;
+  left: 50%; bottom: 30px;
+  transform: translate(-50%, 60%);
+  width: max-content;
+  max-width: min(92%, 420px);
   padding: 10px 18px;
   border-radius: 999px;
   background: rgba(30, 20, 70, 0.96);

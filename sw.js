@@ -1,5 +1,5 @@
 // Offline support. Bump CACHE when shipping a new version so players get fresh files.
-const CACHE = 'crystal-cluster-v2';
+const CACHE = 'crystal-cluster-v3';
 const SHELL = [
   './',
   'index.html',
